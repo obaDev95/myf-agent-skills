@@ -10,9 +10,13 @@ description: >-
 
 # Invoice tables: `mc-table` → HTML `<table>` (ui-myfinance)
 
+## Scope
+
+This skill is **invoice-tab first**: Open, Paid, Credits, and Disputed tables wired through **`useInvoiceHtmlTable*`** composables and invoice presenters/stores. **Estatement** and other non-invoice routes may use plain **`.mds-table`** HTML with different stores/types—use **`mds-component-table-html`** and **`html-table-components`** for markup and selectors; reuse **parity / `git show` / test** checklists from this file without assuming invoice composables drop in unchanged.
+
 ## Version control
 
-Invoice migration skills and their reference docs live under **`.cursor/skills/`** (for example **`invoice-html-table-migration/`** with **`references/`**). Commit those paths so the skill survives branch switches, rebases, and fresh clones. Treat the repo copy as the source of truth for the workflow; extend or fix the skill by editing tracked files and opening a PR like any other documentation.
+Invoice migration skills and their reference docs live under **`skills/`** at this repo root (for example **`invoice-html-table-migration/`** with **`references/`**). Commit those paths so the skill survives branch switches, rebases, and fresh clones. Treat the repo copy as the source of truth for the workflow; extend or fix the skill by editing tracked files and opening a PR like any other documentation.
 
 ## Recommended skill stack (best migration output)
 
@@ -40,14 +44,14 @@ Map **every** column and **every** conditional (mobile-only columns, expanders, 
 
 ### Quick map: mc-table features to HTML
 
-| Legacy `mc-table` | Typical HTML replacement in this repo |
-|-------------------|----------------------------------------|
-| `sortmanual` + `@sortchange` | `useInvoiceHtmlTableSortHelpers` + sort buttons on `<th>`, `aria-sort` |
-| `select` + `@selectchange` | `<mc-checkbox>` in header/first column + `useInvoiceHtmlTableSelectionAndRows` |
-| `expand` + `expandopened` + expanded slot | Extra `<tr>` rows (`mds-table__expanded-row`, `desktop-notification-row`, …) driven by expanded state |
+| Legacy `mc-table`                                        | Typical HTML replacement in this repo                                                                                                                       |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sortmanual` + `@sortchange`                             | `useInvoiceHtmlTableSortHelpers` + sort buttons on `<th>`, `aria-sort`                                                                                      |
+| `select` + `@selectchange`                               | `<mc-checkbox>` in header/first column + `useInvoiceHtmlTableSelectionAndRows`                                                                              |
+| `expand` + `expandopened` + expanded slot                | Extra `<tr>` rows (`mds-table__expanded-row`, `desktop-notification-row`, …) driven by expanded state                                                       |
 | `customStyles` (incl. per-row CSS via `data-cy` on `tr`) | Scoped SCSS + row/cell classes (e.g. cancelled rows) or `:deep` on `.mds-table` shell—**re-express** the same UX, not necessarily the same string injection |
-| Shadow-root row/header hover listeners | `@mouseenter` / `@mouseleave` on `<tr>` / composable helpers |
-| `height` / sticky header props | `section` `style` / classes `mds-table--scrollable`, `mds-table--header-sticky` |
+| Shadow-root row/header hover listeners                   | `@mouseenter` / `@mouseleave` on `<tr>` / composable helpers                                                                                                |
+| `height` / sticky header props                           | `section` `style` / classes `mds-table--scrollable`, `mds-table--header-sticky`                                                                             |
 
 ### `mc-table`-only props vs plain HTML table + MDS (no blind parity rule)
 
@@ -66,12 +70,12 @@ After migration, row chrome and hover behavior come from **`@maersk-global/mds-f
 
 Wire behavior through existing composables instead of reimplementing:
 
-| Concern | Where |
-|--------|--------|
-| Row selection, hover, mobile expand, `actionableInvoice`, row classes | `useInvoiceHtmlTableSelectionAndRows` in `src/composables/InvoiceHtmlTable.composable.ts` (pass correct `tableVariant`: `open` \| `paid` \| `credits` \| `disputed`) |
-| Sort UI helpers (`aria-sort`, sort buttons) | `useInvoiceHtmlTableSortHelpers` from the same file |
-| Expanded row / mobile detail content | `useInvoiceHtmlTablePresenters` in `src/composables/InvoiceHtmlTablePresenters.composable.ts` |
-| Tab-specific data (pagination, store, filters) | **Open** often uses `useOpenInvoicesTableContext` and related composables. **Paid / Credits / Disputed** frequently wire stores, pagination, and handlers **in the SFC**—shapes differ; read the tab you migrate. **Paid** and **Credits** may use **`useInvoiceSelection`** with row selection; **Disputed** uses its own **sort** pipeline (UI column → API sort + list refetch). |
+| Concern                                                               | Where                                                                                                                                                                                                                                                                                                                                                                               |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Row selection, hover, mobile expand, `actionableInvoice`, row classes | `useInvoiceHtmlTableSelectionAndRows` in `src/composables/InvoiceHtmlTable.composable.ts` (pass correct `tableVariant`: `open` \| `paid` \| `credits` \| `disputed`)                                                                                                                                                                                                                |
+| Sort UI helpers (`aria-sort`, sort buttons)                           | `useInvoiceHtmlTableSortHelpers` from the same file                                                                                                                                                                                                                                                                                                                                 |
+| Expanded row / mobile detail content                                  | `useInvoiceHtmlTablePresenters` in `src/composables/InvoiceHtmlTablePresenters.composable.ts`                                                                                                                                                                                                                                                                                       |
+| Tab-specific data (pagination, store, filters)                        | **Open** often uses `useOpenInvoicesTableContext` and related composables. **Paid / Credits / Disputed** frequently wire stores, pagination, and handlers **in the SFC**—shapes differ; read the tab you migrate. **Paid** and **Credits** may use **`useInvoiceSelection`** with row selection; **Disputed** uses its own **sort** pipeline (UI column → API sort + list refetch). |
 
 **Reference implementations** (patterns, not necessarily the newest data-attribute convention):
 
@@ -88,9 +92,9 @@ Wire behavior through existing composables instead of reimplementing:
 
 Do not assume one invoice HtmlTable is a drop-in of another.
 
-- **Open** may use **`useOpenInvoicesTableContext`**, **window virtualization** (`useWindowVirtualTable`, visible indices into `pagedInvoices`), and **`isColumnSortable`** from sort helpers to gate sort UI. Template iteration can be **index-based**, not only `v-for="row in pagedInvoices"`.
-- **Paid** may **`defineExpose`** actionable-invoice helpers for parents; **Paid** mobile expanded rows can include **non-presenter** blocks (e.g. cancelled payment copy) before presenter-driven `expandedData`.
-- **Paid / Credits** often pair selection with **`useInvoiceSelection`** patterns; **Disputed** selection and sort wiring can omit pieces other tabs use—match the target file.
+- **Open** may use **`useOpenInvoicesTableContext`**, **window virtualization** (`useWindowVirtualTable`, visible indices into `pagedInvoices`), and **`isColumnSortable`** from sort helpers to gate sort UI. Template iteration can be **index-based**, not only `v-for="row in pagedInvoices"`. When diffing **`git show`** of pre-migration Open, legacy selection/expansion often came from **`useInvoiceSelection`** and inline **`expandedData`** helpers—shipped **`OpenInvoicesHtmlTable`** uses **`useInvoiceHtmlTableSelectionAndRows`** (`tableVariant: `"open"`) and **`useInvoiceHtmlTablePresenters("open")`\*\*; do not read the old/new diff as dropped logic without checking those composables.
+- **Paid** may **`defineExpose`** actionable-invoice helpers for parents; **Paid** mobile expanded rows can include **non-presenter** blocks (e.g. cancelled payment copy) before presenter-driven `expandedData`. Legacy **`expandedData`** for Paid often lived on **`usePaidInvoicesTable()`**; the HTML table sources the same UX through **`useInvoiceHtmlTablePresenters('paid')`**—verify presenter output against the legacy template, not only removed composable calls. Cancelled-row treatment may move from **`customStyles`** / shadow-DOM workarounds to **`cell--cancelled`** + composable row classes—behavioral parity, not identical CSS injection.
+- **Paid / Credits** often pair selection with **`useInvoiceSelection`** patterns; **Disputed** selection and sort wiring can omit pieces other tabs use—match the target file. Sort UI on the HTML path also syncs via **`invoicesStore.changeSort('disputedTab', …)`** and **`disputedTabSortConfig`** together with **`useInvoiceHtmlTableSortHelpers`**, while list refetch still uses **`disputesStore.UPDATE_SORT_VALUE`** and **`getSortFilteredDisputedInvoiceList()`**—reviewers should not expect **disputes-store-only** column state like legacy `selectedSortColumn` by itself. Row selection moved from **`mc-table`’s native `@selectchange`** to **checkboxes + `useInvoiceHtmlTableSelectionAndRows`**—intentional DOM/UX change vs other tabs.
 - **Disputed** does **not** necessarily mirror the desktop **`expandedRowId` / `desktop-notification-row`** error pattern used on Open, Paid, and Credits—verify against the legacy disputed table, not Open alone.
 - **Pagination / page-size constants** can differ by tab (`resultsPerPage` vs `resultsPerPageNew`, etc.)—copy constants from the tab you touch.
 - **Wrapper test hooks:** several tabs use `data-test="table"` on the `<section>`; Open’s outer structure can differ (refs, height, virtualization)—update selectors per component.
@@ -109,7 +113,7 @@ Legacy `mc-table` slots are **named per row and column** (`` `${row.id}_${column
 
 ## Mobile expanded row parity (production lesson)
 
-Credits (and similar) mobile details come from `expandedData(row)` → `useInvoiceHtmlTablePresenters` (e.g. `expandedDataCredits` in `InvoiceHtmlTablePresenters.composable.ts`). A production issue occurred when that list omitted fields the legacy `mc-table` showed only in mobile/expanded UI—e.g. **reason** (`CreditInvoice.reason`) and **type** copy—so data existed on the row but disappeared for users. **Credits caveat:** some fields (e.g. **reason**) may also render in **inline** small-screen cells outside `expandedData`—audit **presenters and** template `v-if` branches. **Disputed** may rely on mobile `expandedData` without the desktop **`expandedRowId` / notification** second row that other tabs use—do not assume the same row structure as Open/Paid/Credits.
+Credits (and similar) mobile details come from `expandedData(row)` → `useInvoiceHtmlTablePresenters` (e.g. `expandedDataCredits` in `InvoiceHtmlTablePresenters.composable.ts`). A production issue occurred when that list omitted fields the legacy `mc-table` showed only in mobile/expanded UI—e.g. **reason** (`CreditInvoice.reason`) and **type** copy—so data existed on the row but disappeared for users. **Credits caveat:** some fields (e.g. **reason**) may also render in **inline** small-screen cells outside `expandedData`—audit **presenters and** template `v-if` branches. Compare legacy **`CreditsTable`** inline `expandedData` (and mobile slots) to **`expandedDataCredits`** in **`InvoiceHtmlTablePresenters.composable.ts`**, not only Open/Paid shapes. Fields such as **`InvoiceTypeDivision`** may have been **desktop-only** in `mc-table` (`v-if` with `!isSmallScreen`); if the new table shows them on mobile too (or vice versa), record that as an **intentional** UX change or restore parity. **Disputed** may rely on mobile `expandedData` without the desktop **`expandedRowId` / notification** second row that other tabs use—do not assume the same row structure as Open/Paid/Credits.
 
 **Verification (before merge):**
 
@@ -150,6 +154,18 @@ Use findings to update this skill and add a small test when you fix a gap.
 
 Goal: each production or review finding becomes **one skill tweak + one test** where feasible.
 
+## Multi-run replay QA (orchestrated agents)
+
+Use when **`mc-table` → HtmlTable** work is **already merged** and you need to **stress-test the skills** (variance across agents) or validate that a skill revision still produces acceptable migrations.
+
+1. **Baseline** — For each tab, load the **pre-migration** SFC: `git show <migration_commit>^:path/to/LegacyTable.vue`. Handy anchors in this repo: **Open** `609ced126` (`OpenInvoicesTable.vue`), **Paid** `d68735dd2` (`PaidInvoicesTable.vue`), **Disputed** `a512f38b1` (`DisputedInvoicesTable.vue`), **Credits** `93cf9a553` (`credits/CreditsTable.vue`). **Estatement:** `EstatementHtmlTable.vue` landed in `12604f1a8`; diff the **previous** `mc-table` view/table on your branch (e.g. `EstatementTable.vue`) until wiring matches.
+2. **Isolation** — Give **each table/agent its own [git worktree](https://git-scm.com/docs/git-worktree)** or disposable branch so iterative runs do not overwrite the same tree.
+3. **Five consecutive passes** — From the same baseline, re-run this skill plus **`mds-component-table-html`** and **`html-table-components`** **five times** (serially per agent). LLM outputs will differ; after each pass, apply the **[Assessment rubric](#assessment-rubric-legacy-component-vs-htmltablevue)** and run **targeted** unit/component (and e2e if selectors moved) tests for that table.
+4. **Choose the best pass** — Prefer the run with the **strongest rubric score**, **green** tests, and the **smallest unexplained diff** versus legacy; document intentional UX/API changes in notes.
+5. **Feed the skill** — Merge **minimal** edits here (and tests when possible) for each **failure mode** you saw across runs—see [Iterating on skill quality](#iterating-on-skill-quality-feedback-loop). The default goal is **documentation + tests**, not replacing production tables unless you are fixing a regression.
+
+**Skills revision:** align agents on the same **`skills/`** tree (e.g. `git fetch myf-agent-skills main` and use the **`skills/`** directory from that remote without mixing ad-hoc copies).
+
 ## Scoped styles: drop unnecessary `:deep`
 
 Legacy **`mc-table`** rendered inside **shadow DOM**, so `<style scoped>` often used **`:deep(...)`** to pierce internal header/cell markup. After migration, `<table>`, `<thead>`, `<th>`, `<tbody>`, `<td>`, and classes like `.mds-table__column--row-expander` are **normal elements in the same SFC** as the styles—Vue’s scoped transform already applies—**do not wrap** those selectors in `:deep()`.
@@ -162,9 +178,9 @@ Legacy **`mc-table`** rendered inside **shadow DOM**, so `<style scoped>` often 
 
 `@use` is resolved from the **`.vue` file’s directory** (Vite/Vue convention):
 
-| SFC location | Typical `@use` |
-|--------------|----------------|
-| `src/components/FooHtmlTable.vue` | `@use "scoped-styles/invoice-table";` |
+| SFC location                                  | Typical `@use`                                                                                                                                              |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/components/FooHtmlTable.vue`             | `@use "scoped-styles/invoice-table";`                                                                                                                       |
 | `src/components/credits/CreditsHtmlTable.vue` | `@use "./credits-table";` and `@use "../scoped-styles/invoice-table";` (nested folders may add a **local** partial **plus** the shared invoice-table sheet) |
 
 Copying a `<style>` block into a nested folder **without** adjusting the path breaks `npm run start` / Vite (“Can’t find stylesheet to import”). Run `npm run start` or `npm run build` after moves.
@@ -182,7 +198,7 @@ Copying a `<style>` block into a nested folder **without** adjusting the path br
 3. **Implement `<table>`** with `scope="col"` on `<th>`, stable **row key** (`:key="row.id"`), and **row test id** (`:data-cy="row.id"`) where tests rely on it.
 4. **Import MDS** web components actually used (`mc-checkbox`, `mc-button`, `mc-icon`, `mc-pagination`, `mc-c-copy-item`, …) — same as sibling tables.
 5. **Styles:** reuse `@use "scoped-styles/invoice-table"` or established table SCSS (see [SCSS `@use` paths](#scss-use-paths-for-shared-invoice-table-styles)); align with `mds-table` modifiers from `mds-component-table-html`; avoid redundant `:deep` on native table markup ([Scoped styles](#scoped-styles-drop-unnecessary-deep)).
-6. **Tests** — follow [references/test-structure.md](references/test-structure.md): **BDD `it` titles**, **feature-grouped `describe`** (Sorting, Selection, Pagination, …), **no root-level `it`**. Cover **mobile expanded parity** and **conditional parity** when the legacy table differed by viewport.
+6. **Tests** — follow the **[test-structure](../test-structure/references/test-structure.md)** skill: **BDD `it` titles**, **feature-grouped `describe`** (Sorting, Selection, Pagination, …), **no root-level `it`**. Cover **mobile expanded parity** and **conditional parity** when the legacy table differed by viewport.
    - **Unit:** shallow/deep as appropriate; mock stores; assert sort/selection helpers; toggle `isSmallScreen` when testing responsive branches.
    - **Component (Cypress):** update selectors from slot-based assumptions to `th`/`td` + `data-*` / `data-cy` patterns used in the new template; add **Mobile expanded parity** (or equivalent) when needed.
    - **E2E:** search `tests/e2e` for `data-header-id`, `mc-table`, and table-specific step definitions. **Shipped invoice tables today** mostly use `th`/`td` **`data-header-id`**. If you move to **`data-column-id` / `data-cell-id`**, update steps to `th[data-column-id='…']` / `td[data-cell-id='…']` consistently. See [references/selector-mapping.md](references/selector-mapping.md) for DOM/e2e alignment with shipped tables.
@@ -196,7 +212,7 @@ Copying a `<style>` block into a nested folder **without** adjusting the path br
 - **Incomplete mobile expanded data** in presenters—users lose fields that only appeared in legacy mobile/expanded slots ([Mobile expanded row parity](#mobile-expanded-row-parity-production-lesson)).
 - **Missing props on migrated slot content**—e.g. omitting **`DocumentReferenceCell` `:HBL`** when the legacy slot passed `documentReference` ([Slot-to-cell prop audit](#slot-to-cell-prop-audit-parity)).
 - **Wrong or drifted mobile conditionals**—header/body `v-if` mismatched or breakpoints unlike legacy ([Mobile conditional render translation](#mobile-conditional-render-translation-systematic-audit)).
-- **Flat or vague specs**—root-level `it` in component, view, or Cypress table specs, `describe("snapshots")` with non-BDD titles, or `describe` names about file mechanics instead of **functionality**; see [references/test-structure.md](references/test-structure.md).
+- **Flat or vague specs**—root-level `it` in component, view, or Cypress table specs, `describe("snapshots")` with non-BDD titles, or `describe` names about file mechanics instead of **functionality**; see the **[test-structure](../test-structure/references/test-structure.md)** skill.
 - **Redundant `:deep` on native table markup** after migration ([Scoped styles](#scoped-styles-drop-unnecessary-deep)).
 - **Blind `mc-table` prop → `.mds-table` modifier mapping** for presentation (hover, zebra, lines)—see [mc-table-only props vs plain HTML table + MDS](#mc-table-only-props-vs-plain-html-table--mds-no-blind-parity-rule); do not block merges on guessed equivalence to MDS foundations.
 

@@ -12,9 +12,9 @@ description: >-
 
 ## Related skills (restore if missing)
 
-- **`invoice-html-table-migration`** (`.cursor/skills/invoice-html-table-migration/SKILL.md`) is the **explicit mc-table → HTML table** playbook for this app: composables, reference components, test/e2e updates, and a migration checklist. Use its **Assessment rubric** when comparing a legacy `mc-table` paste to a migrated `*HtmlTable.vue`.
-- **`mds-component-table-html`** (`.cursor/skills/mds-component-table-html/`) documents **MDS foundations** for hand-written `<table>`: `.mds-table` modifiers, sticky headers, selection/expansion, a11y checklist, and a full Vue example.
-- **Why it “vanished” on a new branch:** On many workflows, `.cursor/skills` was introduced on branch `chore/add-mds-vue-skills` and is **not** part of `main`. Checking out a **new branch from `main`** therefore drops those files from the working tree unless they were committed on the branch you cut from. **Mitigation:** merge or cherry-pick `chore/add-mds-vue-skills`, or **commit** `.cursor/skills` on your feature branch so the skills travel with the repo.
+- **`invoice-html-table-migration`** (`skills/invoice-html-table-migration/SKILL.md`) is the **explicit mc-table → HTML table** playbook for this app: composables, reference components, test/e2e updates, and a migration checklist. Use its **Assessment rubric** when comparing a legacy `mc-table` paste to a migrated `*HtmlTable.vue`.
+- **`mds-component-table-html`** (`skills/mds-component-table-html/`) documents **MDS foundations** for hand-written `<table>`: `.mds-table` modifiers, sticky headers, selection/expansion, a11y checklist, and a full Vue example.
+- **Why it “vanished” on a new branch:** On many workflows, the `skills/` pack was introduced on branch `chore/add-mds-vue-skills` and is **not** part of `main`. Checking out a **new branch from `main`** therefore drops those files from the working tree unless they were committed on the branch you cut from. **Mitigation:** merge or cherry-pick `chore/add-mds-vue-skills`, or **commit** `skills/` on your feature branch so the pack travels with the repo.
 - **Shared invoice table logic** in app code lives in `src/composables/InvoiceHtmlTable.composable.ts`, `InvoiceHtmlTablePresenters.composable.ts`, and table-specific composables (e.g. `OpenInvoicesTable.composable.ts`). The MDS skill does not replace those; it complements them.
 
 ## Scope

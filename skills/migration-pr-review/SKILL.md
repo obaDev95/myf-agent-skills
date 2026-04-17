@@ -53,6 +53,7 @@ A logic check that fails is always a **block**.
 - [ ] Every row has `:key="row.id"` and `:data-cy="row.id"`.
 - [ ] Sort buttons carry `data-test="sort-button-<columnKey>"`; the select-all checkbox carries the table's agreed `data-test`; the row expander carries `data-test="row-expander"`.
 - [ ] Colspans are computed (`desktopColspan`, `mobileExpandedColspan`) — never hard-coded.
+- [ ] **Colspan arithmetic matches `<th>` count at the breakpoint where the colspan-bearing `<tr>` renders.** Manually count the `<th>` that render at that breakpoint (desktop: selection + all data columns with non-falsy `v-if`; mobile: selection (if shown) + expander + mobile-visible data columns). Common shipped bugs: `desktopColspan` used on virtual-padding rows that also render on mobile (over-spans on small screens), or `data` column count miscounted on desktop (under-spans by one). See **[../html-table-components/SKILL.md](../html-table-components/SKILL.md)** § Step 3 "Colspans are computed per breakpoint".
 - [ ] No `<th>` / `<td>` uses `display: flex` or `display: grid` directly. Flex/grid stacks live on inner wrappers.
 - [ ] Every `DocumentReferenceCell` / `SubCell` / copy-item preserves every legacy prop (`BL`, `HBL`, `customer-reference`, `copy-field`, `copy-page`, prefix labels). Dropped props are a block.
 - [ ] No imperative `tableRef.shadowRoot.*` code. The HTML table has no shadow root.

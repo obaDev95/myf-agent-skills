@@ -30,7 +30,7 @@ Returned state / handlers that the template must consume by name (not reinvent):
 
 | Export | Consume in template as |
 |--------|------------------------|
-| `hoveredId` | `:data-state="hoveredId === row.id ? 'hovered' : undefined"` (optional, parity with legacy `data-state`) |
+| `hoveredId` | `:data-state="hoveredId === row.id ? 'hovered' : undefined"` on every `<tr>`. **Recommended** — Paid, Credits, and Disputed ship it today; Open currently omits it. Add it to Open the next time that file is touched for consistent Cypress selectors and styling hooks across invoice tabs. |
 | `expandedRowId` | `v-if="!appStore.isSmallScreen && expandedRowId === row.id"` for the desktop error row |
 | `pageSelectionState` | `:checked="pageSelectionState.allSelected"`, `:indeterminate="pageSelectionState.indeterminate"` on the header checkbox |
 | `showSelectionColumn` | `v-if="showSelectionColumn"` on `<th>` and `<td>` for the row selector |
@@ -125,7 +125,7 @@ Estatement is covered here because it uses `useInvoiceHtmlTableSelectionAndRows`
 - **Data attributes**: Convention B (`data-column-id` / `data-cell-id`). Keep it.
 - **Region label**: `$t("common.estatement")`.
 - **Selection**: `useInvoiceSelection(pagedInvoices).handleSelectionChange`.
-- **Styling**: the SFC defines its own header/body padding rules (`.estatement-table thead th` etc.) because the selection column shifts which cell is `:first-child`; do not regress to `:first-child` rules that assume an invoice-tab column order.
+- **Styling**: the SFC defines its own header/body padding rules (`.estatement-table thead th` etc.) because the selection column shifts which cell is `:first-child`. The shared `invoice-table.scss` padding selectors (`thead th:first-child { padding-inline: 16px }`) target whichever `<th>` is currently first in DOM order — when the selection column renders, it is the selection checkbox; when it is hidden, the first data column becomes `:first-child` and inherits the same padding instead. Estatement's SFC-local `.estatement-table thead th:first-child` / `tbody td:first-child` rules keep padding correct regardless of whether the selection column is rendered at the current breakpoint. When adding a new `*HtmlTable.vue` whose selection column is conditional, either (a) rely on the shared `:first-child` rule if the behaviour is acceptable for both the selection checkbox and the first data column, or (b) follow Estatement's pattern and define SFC-local `:first-child` rules that handle both cases explicitly.
 
 ---
 
@@ -163,6 +163,8 @@ The legacy invoice tables pass every one of these props; all of them must surviv
 ```
 
 Dropping `:HBL` silently breaks BL+HBL display and copy behavior; dropping `copy-page` breaks analytics.
+
+**Kebab-case / camelCase note.** Vue normalises attribute names — `:hbl="…"` in a template binds to the same `HBL` prop as `:HBL="…"`. Legacy Disputed used `:hbl` (kebab); shipped tables use `:HBL` (camel). Do not classify a case change as a dropped prop. The audit is about whether the binding exists at all and carries the same expression, not about casing.
 
 ---
 

@@ -333,7 +333,7 @@ The `column_right` class lives in `src/components/scoped-styles/invoice-table.sc
 
 `tableClasses` is always a computed map. Entries that every tab ships:
 
-- `mds-table--scrollable` — always true for invoice tabs. Desktop overflow plus sticky header rely on it.
+- `mds-table--scrollable` — always true for invoice tabs. Desktop overflow plus sticky header rely on it. **Exception:** when a parent view owns scroll (Estatement renders inside `EstatementTable.vue`, which controls the outer layout), the `*HtmlTable.vue` may drop the modifier and set `overflow: auto` directly on its `<section>` wrapper in scoped CSS. Prefer `mds-table--scrollable` whenever the SFC is itself the scroll ancestor; use the SFC-local `overflow` only when a parent view already manages layout.
 - `<tab>-table--mobile` — true on small screens. Carries the only responsive CSS specific to the tab.
 - `mds-table--header-sticky` — true when the parent view asks for it (Open accepts a `headerSticky` prop).
 - `mds-table--disable-row-highlight-on-hover` — **only** when the legacy `<mc-table>` carried `disablerowhighlightonhover`. Do not add by default.

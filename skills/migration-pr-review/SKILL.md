@@ -18,9 +18,45 @@ A review is a verification pass against the **legacy** file, not a read of the m
 ## Review workflow
 
 1. **Load the legacy baseline.** Use the anchors in **[../html-table-components/references/ui-myfinance-tables.md](../html-table-components/references/ui-myfinance-tables.md)**, or run `git log --follow` to find the pre-migration SFC.
-2. **Run the migration-pipeline checks in order** (below). Do not skip sections — a passing check on one section does not imply the others pass.
-3. **Classify findings** as block / follow-up / nitpick (see the bottom of this skill).
-4. **Produce a summary** that cites the legacy line range for every asserted parity gap. `git blame` output or the `git show` hash + path is enough.
+2. **Pick the variant.** Not every rubric bullet applies to every table — see **Variant checklist** below. Skipping a bullet marked N/A for the variant is not a gap.
+3. **Run the migration-pipeline checks in order** (below). Do not skip sections — a passing check on one section does not imply the others pass.
+4. **Classify findings** as block / follow-up / nitpick (see the bottom of this skill).
+5. **Produce a summary** that cites the legacy line range for every asserted parity gap. `git blame` output or the `git show` hash + path is enough.
+
+---
+
+## Variant checklist
+
+Which rubric bullets apply to which variant. Bullets marked **N/A** below may be skipped without a finding; bullets marked **yes** are required; bullets marked **conditional** fire only when the legacy template exposed the behaviour.
+
+| Rubric bullet | Invoice tab (Open, Paid, Credits, Disputed) | Estatement | Refunds-selected |
+|---------------|---------------------------------------------|------------|------------------|
+| §1 Sorting | yes | N/A (no sort on table) | N/A unless config adds sort |
+| §1 API sort refetch | Disputed only | N/A | N/A |
+| §1 Header checkbox select-all + per-row | yes | yes | yes |
+| §1 Cancelled-row select-all exclusion | Paid only | N/A | N/A unless config adds disabled rows |
+| §1 Mobile expansion via `toggleMobileRow` + presenter | yes | N/A (no expansion) | N/A |
+| §1 Desktop error row (`expandedRowId`) | Open, Paid, Credits (Disputed omits) | N/A | N/A |
+| §1 Hover menu | yes | N/A (no row-level action menu) | conditional |
+| §1 Pagination + `.search-container` scroll | yes (on the SFC) | N/A on the SFC (pagination lives in parent view `EstatementTable.vue`) | conditional |
+| §1 Copy analytics | yes where `mc-c-copy-item` renders | yes | yes |
+| §1 Lifecycle resets | conditional (tab-specific `resetDivisionFilter`, `REMOVE_CANCELLED_INVOICES`) | N/A | conditional |
+| §2 Canonical wrapper + column order | yes | yes (no mobile expander column) | yes |
+| §2 Paired `<th>` / `<td>` `v-if` | yes | yes (via `isColumnVisible` guard) | yes |
+| §2 Data-attribute convention | yes (A) | yes (B) | yes (B) |
+| §2 Sort / select / expander `data-test` | yes (sort + select always; expander when mobile) | `select-all-<tab>` only (no sort, no expander) | conditional |
+| §2 Colspans breakpoint-aware | yes | N/A unless colspan rows are added | conditional |
+| §2 `DocumentReferenceCell` prop contract | invoice tabs only | N/A (Estatement uses `MaskedText` / `mc-c-copy-item`) | conditional |
+| §3 Every shared class has `@use` | yes | yes | yes |
+| §3 No `:deep()` on native markup | yes | yes | yes |
+| §3 No inline `style=""` for layout | yes (with carve-outs — see §3) | yes | yes |
+| §3 No duplicated chrome blocks | yes | yes (Estatement-specific padding rules are legitimate, not duplicates) | yes |
+| §4 Feature groups | full canonical list | Rendering + Selection on component spec; Pagination + Page size on parent-view spec (split coverage is acceptable for this variant) | applicable subset |
+| §4 Variant-specific groups | per-variant (Cancelled rows / API sort / Virtualization) | Dynamic column order | N/A |
+| §4 Selector rename hygiene | yes | yes | yes |
+| §5 Inventory row in `ui-myfinance-tables.md` | yes | yes | yes |
+
+When a table introduces a new pattern that this table does not cover, add a row to the matrix in the same PR. Do not silently skip bullets for a new variant.
 
 ---
 

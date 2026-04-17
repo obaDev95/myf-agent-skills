@@ -41,6 +41,19 @@ Rule: **any class used in the template that is defined in a partial this SFC did
 
 When you move an SFC between folders, update the `@use` paths in the same commit. `npm run start` and `npm run build` surface missing paths ("Can't find stylesheet to import"); TypeScript does not.
 
+### Leaf cell components have their own `@use`
+
+Vue scoped styles are **per-SFC**, not per-component-tree. If an `*HtmlTable.vue` file loads `invoice-table.scss` via `@use`, those styles apply to elements inside **that file's template only**. When a leaf cell component rendered inside a `<td>` (`OpenInvoiceAmountCell.vue`, `OpenInvoiceDueDateCell.vue`, `SubCell.vue`, `DocumentReferenceCell.vue`, any `*Cell.vue`) has its own `<template>` using classes like `column_right`, `align-right`, or `adjust-width`, the leaf SFC **must** `@use "scoped-styles/invoice-table"` itself. The parent table's `@use` does not reach child DOM.
+
+Verification when touching a leaf cell or adding a new one:
+
+1. Grep the leaf's template for class names.
+2. For every class not defined locally in the leaf's `<style scoped>`, check whether it lives in a shared partial (`invoice-table.scss` today, or any future split).
+3. If it does, confirm the leaf's `<style scoped lang="scss">` has the matching `@use` line with a path correct for the leaf's folder (e.g. `src/components/openInvoices/OpenInvoiceAmountCell.vue` uses `@use "../scoped-styles/invoice-table"`).
+4. If no other scoped styles are needed, still add the `@use` and a minimal `<style scoped lang="scss">` block — do not assume "no styles here" means nothing to import.
+
+Shipped leaves that use `column_right` / `align-right` without their own `@use` are a latent risk — they may render correctly today because of how the current scoped-style graph happens to resolve, but the SFC has no direct dependency on the partial it consumes. Any future move of the leaf, change to its root-element wrapping, or refactor of the parent's `@use` can silently break the rendered layout. Each leaf should own its style dependencies.
+
 ---
 
 ## Extraction workflow

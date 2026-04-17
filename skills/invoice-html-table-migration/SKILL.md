@@ -50,7 +50,7 @@ The composable also watches `pageRows` and `appStore.isSmallScreen` to reset exp
 
 `sortableColumns` is a `Set<TColumn>`. `sortConfig` is a `ComputedRef<{ column?: TColumn; direction: Direction }>` sourced from `invoicesStore.<tab>TabSortConfig`. `sortChange` is the tab's bridge to store/API state.
 
-Every sort button must use the exports `isColumnSortable`, `isSortedColumn`, `sortButtonClass`, `sortIconName`, `getAriaSort`, `toggleSort`. The canonical `<th>` sort-button shape in `html-table-components/SKILL.md` is the single template that all variants follow; agents that ship a simplified inline button (no `v-if="isColumnSortable"` fallback, no `data-test="sort-button-<key>"`) are diverging from the shared shape.
+Every sort button must use the exports `isColumnSortable`, `isSortedColumn`, `sortButtonClass`, `sortIconName`, `getAriaSort`, `toggleSort`. The canonical `<th>` sort-button shape in `html-table-components/SKILL.md` is the single template that all variants follow. The `v-if="isColumnSortable(...)"` + `<span v-else>` fallback is required when `sortableColumns` is dynamic (Open); it is optional when every sort-button column is statically sortable (Paid / Credits / Disputed). `data-test="sort-button-<key>"` is always required.
 
 ### `useInvoiceHtmlTablePresenters(variant).expandedData(row)`
 

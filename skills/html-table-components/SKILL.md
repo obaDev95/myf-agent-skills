@@ -227,7 +227,9 @@ Repeat this per sortable `<th>`; the shape comes from `useInvoiceHtmlTableSortHe
 </th>
 ```
 
-The `v-if="isColumnSortable(...)"` branch + `<span v-else>` fallback is mandatory — it is the safe pattern when `sortableColumns` is a prop, a config, or changes by breakpoint.
+The `v-if="isColumnSortable(...)"` branch + `<span v-else>` fallback is **required when `sortableColumns` is dynamic** — a prop, a config fetched from a helper, something that changes by breakpoint, or anything else that can decide a column is non-sortable at runtime. Open follows this pattern because its sortable set comes from a config and it accepts `sortDisabled` per column.
+
+When a table's sortable columns are **statically** the same set as the columns that render a sort button (Paid, Credits, Disputed — every column with a sort button is always sortable), the `v-if` + `<span v-else>` fallback is optional: both branches would be statically dead-coded on the `v-else` side. Keep the canonical shape above as the **default**; omit the fallback only when a comment in the SFC states "all sort-button columns are statically sortable". The guard costs nothing and removing it later to add a dynamic column is a silent refactor — the opposite direction is always safer.
 
 ---
 

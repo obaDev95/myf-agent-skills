@@ -31,6 +31,7 @@ Each of these must fire from the new template/composables and produce the same u
 - [ ] Sorting toggles the right direction and writes to `invoicesStore.<tab>TabSortConfig`.
 - [ ] When the tab refetches on sort change (Disputed today), both the store write **and** the refetch call land in the handler. Assert both.
 - [ ] Header checkbox toggles all rows on the current page; row checkboxes toggle individually; `pageSelectionState.indeterminate` handles partial selection.
+- [ ] For tables with cancelled-row or disabled-row rules (Paid today), `toggleSelectAll` must exclude those rows — CSS `pointer-events: none` only blocks direct clicks, not the programmatic select-all path. See **[../invoice-html-table-migration/SKILL.md](../invoice-html-table-migration/SKILL.md)** § Paid for the `rowSelectable` predicate contract.
 - [ ] Selection writes to the correct store path — `invoicesStore.checkedInvoicesIds` directly for Disputed, through `useInvoiceSelection` elsewhere.
 - [ ] Mobile expansion opens and closes via `toggleMobileRow` from `useInvoiceHtmlTableSelectionAndRows`. Content comes from `useInvoiceHtmlTablePresenters(variant).expandedData(row)`, not from a new hand-rolled list in the SFC.
 - [ ] Desktop error row renders when `expandedRowId === row.id`, if the legacy template exposed a desktop error slot. If the legacy did not expose one (Disputed), the new template must not render one either.

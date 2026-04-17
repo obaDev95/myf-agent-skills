@@ -1,15 +1,27 @@
-# Selector mapping (E2E / DOM)
+# Selector mapping (DOM and e2e)
 
-Use with the main skill’s parity sections—**selectors alone do not prove behavioral parity**.
+Selectors alone do not prove parity — always pair them with the behavior checks from **[../SKILL.md](../SKILL.md)**.
 
-## Structural references in repo
+## Conventions in the shipped tables
 
-**`src/components/OpenInvoicesHtmlTable.vue`** is the primary **behavioral** reference (sorting, selection, virtualization). It and the other shipped invoice `*HtmlTable.vue` files still use **`data-header-id`** on `<th>` and `<td>` for most tests and e2e—align step definitions with that unless you are doing a ticketed rename.
+| SFC | Header / cell convention | Notes |
+|-----|--------------------------|-------|
+| `OpenInvoicesHtmlTable.vue`, `PaidInvoicesHtmlTable.vue`, `DisputedInvoicesHtmlTable.vue`, `credits/CreditsHtmlTable.vue` | `data-header-id="<columnKey>"` on both `<th>` and `<td>` | Aligns with invoice unit/component/e2e specs. Do not flip to `data-column-id` / `data-cell-id` without a PR that also updates every test and step definition that greps for `data-header-id`. |
+| `EstatementHtmlTable.vue`, `RefundsSelectedHtmlTable.vue` | `data-column-id="<columnKey>"` on `<th>` + `:data-cell-id="\`${row.id}-<columnKey>\`"` on `<td>` | Demonstrates the refreshed pattern — use for new tables or an intentional refresh, not as proof that the invoice tabs already moved. |
 
-**Virtualization:** Open’s table only renders a **window** of rows. Assertions that count `<tr>` nodes or query “all invoice rows” may fail unless the test scrolls the scroll container or stubs `useWindowVirtualTable`—see the main skill’s **Window virtualization (Open invoices)** section.
+## Always present (regardless of convention)
 
-**`src/components/RefundsSelectedHtmlTable.vue`** demonstrates the **newer** hook pattern: **`data-column-id`** on headers and composite **`data-cell-id`** on body cells—see **`html-table-components`**. Use it when adding **new** selectors or refreshing a table intentionally, not as proof that Open/Paid/Credits/Disputed already use those attributes.
+- `<tr :data-cy="row.id">` on every body row. Scopes per-row queries.
+- `<tr :data-cy="`expanded-${row.id}`">` on both the mobile expanded row and the desktop notification row.
+- `<section data-test="table">` (or a tab-specific equivalent such as `data-test="estatement-table"`) on the wrapper.
+- `<button data-test="sort-button-<columnKey>">` on every sort trigger.
+- `<mc-checkbox data-test="select-all-invoices">` / `"select-all-estatement"` etc. on the header checkbox.
+- `<button data-test="row-expander">` on the mobile expander button.
 
-## Expanded / mobile content
+## Virtualization (Open)
 
-**Expanded row parity** is not only “can Cypress find a cell?” Legacy `mc-table` often showed fields **only** in mobile or expanded slots. After migration, the same data must still surface via `expandedData(row)` (and related helpers) from `useInvoiceHtmlTablePresenters` in `InvoiceHtmlTablePresenters.composable.ts`. Also verify **inline** mobile cells where the product put copy outside the presenter list. If a field existed in the legacy mobile template but never appears in the new template or presenters, users lose information even when row data is present—verify against the **legacy template**, not only selectors.
+`OpenInvoicesHtmlTable.vue` uses `useWindowVirtualTable`; only a window of rows renders at a time plus two virtual padding `<tr data-test="virtual-padding-top|bottom">`. Assertions that count `<tr>` nodes or look for "every row" on the page must either scroll the scroll container, widen the Cypress viewport, or stub the virtualizer.
+
+## Mobile expanded parity
+
+Fields rendered only in the legacy mobile/expanded slots must surface either through `useInvoiceHtmlTablePresenters(variant).expandedData(row)` (preferred) or as an inline mobile block inside an existing column (only when the legacy template did this). When adding a new field, update the presenter first; extend the SFC inline only when the legacy UX was inline.

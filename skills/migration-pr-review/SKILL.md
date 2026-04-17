@@ -79,7 +79,7 @@ Follow **[test-structure](../test-structure/SKILL.md)** and its **[html-table-fe
 - [ ] Responsive branches are covered by toggling `appStore.isSmallScreen` in Vitest and by at least one Cypress run at a small viewport when the mobile template diverges from desktop.
 - [ ] Virtualized tables (Open) do not assert "row count in DOM equals page size". Tests scroll the container, stub the virtualizer, or assert against the page store.
 - [ ] Cancelled-row tests (Paid) assert both the `cell--cancelled` class and the absence of an interactive handler (no selection change, no download).
-- [ ] API-sort tests (Disputed) assert both the `invoicesStore.changeSort` write and the `disputesStore.UPDATE_SORT_VALUE` + refetch call.
+- [ ] API-sort tests (Disputed) assert **all three**: the `invoicesStore.changeSort("disputedTab", …)` write, the `disputesStore.UPDATE_SORT_VALUE({ sort_by, id })` write with the UI-column-to-API-field mapping applied, and the awaited `disputesStore.getSortFilteredDisputedInvoiceList()` refetch. Shipped Vitest specs that only assert `UPDATE_SORT_VALUE` + refetch miss the `changeSort` half of the dual-write and will not catch regressions where `disputedTabSortConfig` falls out of sync with the API fetch.
 - [ ] When the PR renames `data-header-id` → `data-cell-id` on a shipped table, every unit / component / e2e selector is updated in the same PR. Partial renames are a block.
 
 ---

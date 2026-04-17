@@ -75,6 +75,17 @@ For every element of the `columns` array (and `mobileColumns` if the table swaps
 
 Flag any field the migration must act on (for example `label: ""` requires an empty `<th>` with `sr-only`; `sortDisabled: true` means the sort button must not render).
 
+**`subDataKey` / `subDataLabel` / `dataType` — highest-risk fields.** `mc-table` renders these as **subtext** inside the same cell, driven by the column config rather than a named slot. Because they have no slot name of the form `` `${row.id}_<columnKey>` ``, a slot-centric audit that only scans `<div :slot=…>` blocks will miss them completely and the HTML migration will silently drop the field from the rendered output. This is the Credits `reason` regression class.
+
+For every column with a non-empty `subDataKey` (or equivalent `dataType` / `subDataLabel`):
+
+- Record the field name from the row model (`row.<subDataKey>`).
+- Record the label i18n key from `subDataLabel` if present.
+- Write down **where** the HTML migration will render it: inline inside the same `<td>` as the primary value (typical for `reason`, `customerReferenceNo` subtext), inside `expandedData(row)` returned by the presenter (typical for mobile-only summaries), or both (when legacy rendered inline on desktop and in the expanded row on mobile).
+- Treat omission from the migration as a parity loss, not an optimisation.
+
+When the audit is done, the parity matrix should list every `subDataKey` field explicitly — no column-config entry should be left implicit.
+
 ### 3. Named slots
 
 Every `:slot="\`${row.id}_<columnKey>\`"` and `:slot="\`${row.id}_expanded\`"` is a slot. For each:

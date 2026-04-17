@@ -118,7 +118,7 @@ After extraction, the `<style scoped lang="scss">` in an `*HtmlTable.vue` should
 
 Explicitly not allowed:
 
-- `:deep()` on native table markup (`<table>`, `<thead>`, `<tbody>`, `<th>`, `<td>`, `.mds-table__…`) — these are same-SFC elements; scoped CSS applies to them without `:deep`.
+- `:deep()` on native table markup (`<table>`, `<thead>`, `<tbody>`, `<th>`, `<td>`, `.mds-table__…`) — these are same-SFC elements; scoped CSS applies to them without `:deep`. Shipped invoice-tab SFCs still carry `:deep(.mds-table thead th)` blocks left over from the legacy `<mc-table>` shadow-DOM migration; they are safe to render but misleading. **When you touch an `*HtmlTable.vue` file for any reason, remove `:deep()` from selectors that resolve to same-SFC elements** — no behaviour change, clearer intent. Estatement already ships in the correct shape.
 - Duplicated copies of sort-button, row-expander, expanded-cell, desktop-notification-row, or row-state styles. Those are partial material.
 - Hard-coded pixel paddings on `thead th` / `tbody td` — they belong in the shared partial so every table paginates and aligns the same way.
 

@@ -70,6 +70,27 @@ describe("<TableName>HtmlTable", () => {
 
 ---
 
+## Asserting `<script setup>` behaviour
+
+`*HtmlTable.vue` files use `<script setup lang="ts">`. Unlike Options API components, **`<script setup>` does not auto-expose its bindings on `wrapper.vm`**. Only names passed to `defineExpose({ ... })` are reachable from tests via the component instance.
+
+Prefer these assertion paths, in order:
+
+1. **Drive behaviour through the DOM and assert the outcome.**
+   ```ts
+   await wrapper.find('[data-test="sort-button-invoiceNo"]').trigger("click");
+   expect(invoicesStore.changeSort).toHaveBeenCalledWith("paidTab", "invoiceNo", "ascending");
+   ```
+   This is the default — it exercises the real event path and survives refactors of the setup block.
+
+2. **Assert on the store / composable spies** for side-effects the SFC handler fires. Mock the store with `createTestingPinia({ stubActions: false })` (or the project helper) and spy on the action.
+
+3. **Only `defineExpose` a handler when tests genuinely need to invoke it out-of-band** (Paid exposes `setActionableInvoice` / `clearActionableInvoice` because the parent view needs them, and the tests ride on that same expose). Exposing *only* for tests is a smell — document the reason in the SFC with a comment.
+
+Shipped specs that call `wrapper.vm.sortChange(...)`, `wrapper.vm.paginationChange(...)`, `wrapper.vm.toggleSelectAll()` on a `<script setup>` SFC without a corresponding `defineExpose` are relying on Vue test-utils internals that are not contract — the calls may break on a minor test-utils upgrade. When you touch such a spec, rewrite the assertion to go through the DOM + store path.
+
+---
+
 ## Anti-patterns
 
 - Collapsing Sorting and Selection into one `describe("Interactions")`. Reviewers cannot tell which feature broke when a failure shows up.

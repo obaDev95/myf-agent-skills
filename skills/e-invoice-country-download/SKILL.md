@@ -23,7 +23,7 @@ description: >-
 2. **Which API document type and file extension to use** is split between `configItems.eInvoiceConfig`, `getDocumentType()` in `DownloadMenu.vue`, and `getExtension()` in `download.utility.ts`.
 3. **`DocumentTypeEnum`** comes from `@/auto/api/export-documents` (generated). **Do not hand-edit** `src/auto/api/export-documents.ts`.
 
-Read file-level detail in [references/flow-and-files.md](references/flow-and-files.md), including the **MYF-4368 (Belgium)** parity checklist.
+Read file-level detail in [references/flow-and-files.md](references/flow-and-files.md), including the **Belgium (BE)** reference checklist (dual customer country + business area).
 
 ---
 
@@ -33,7 +33,7 @@ Read file-level detail in [references/flow-and-files.md](references/flow-and-fil
 |-----------|----------------|
 | E-invoice is keyed off **customer country** only (customer in `XX`) | Add `XX` to `eInvoiceCountries`, add `eInvoiceConfig.XX`, extend `EInvoiceConfig` in `configItems.interface.ts`. Often **no** change to `E_INVOICE_PREFIXES` in `DownloadMenu.vue`. |
 | E-invoice is keyed off **invoice `businessArea`** (e.g. `VN…`, `EG…`, `BE…`) | Add the **two-letter prefix** to `E_INVOICE_PREFIXES`, add matching `eInvoiceConfig[<prefix>]`, and align `getEInvoiceData()` (ordering and guards such as `eInvoiceNo` for VN). |
-| **Both** customer country `XX` **and** business areas `XX…` must work (common for regional billing) | Add `XX` to **`eInvoiceCountries`** (for `showEInvoice`, `getDocumentType` customer branch, and **`getExtension`** when `fileType` is json/xml) **and** add `XX` to **`E_INVOICE_PREFIXES`** with `eInvoiceConfig.XX` so business-area rows resolve. Example: **Belgium (MYF-4368)**. |
+| **Both** customer country `XX` **and** business areas `XX…` must work (common for regional billing) | Add `XX` to **`eInvoiceCountries`** (for `showEInvoice`, `getDocumentType` customer branch, and **`getExtension`** when `fileType` is json/xml) **and** add `XX` to **`E_INVOICE_PREFIXES`** with `eInvoiceConfig.XX` so business-area rows resolve. Example: **Belgium (BE)** — customers in `BE` and invoices with `BE…` business areas. |
 | Backend introduces a **new** `DocumentTypeEnum` value | Edit `schemas/myfinance-export-documents-API.v1.yml`, run `npm run codegen-export-documents`, then wire the new enum member in `eInvoiceConfig`. |
 
 **Extension resolution (`getExtension`)**: For `pdfType === "eInvoice"`, the **non-pdf** `fileType` from `eInvoiceConfig` is applied only when the **country code string** passed into `getExtension` is listed in `eInvoiceCountries`. If you add a business-area prefix that uses `xml`/`json`, that prefix must appear in `eInvoiceCountries` so the download uses the right extension. If `fileType` is `pdf`, falling through to `"pdf"` can still work when the prefix is omitted from `eInvoiceCountries` — verify for the new country.
@@ -46,7 +46,7 @@ Copy and tick through in order.
 
 ### 1) Document type: reuse existing enum vs new OpenAPI value
 
-- [ ] Confirm with backend which **`DocumentTypeEnum`** value the export-documents API expects (many rollouts **reuse** an existing member, e.g. **xml** e-invoices using `DocumentTypeEnum.VIETNAMINVOICE`).
+- [ ] Confirm with backend which **`DocumentTypeEnum`** value the export-documents API expects (many tickets **reuse** an existing member, e.g. **xml** e-invoices using `DocumentTypeEnum.VIETNAMINVOICE`).
 - [ ] **Reuse only (no contract change)** — typical “enable a country” ticket: **do not** edit `schemas/` or run `codegen-export-documents`. Import the chosen enum from `@/auto/api/export-documents` and set `eInvoiceConfig[…].invoiceType` to that member.
 - [ ] **New enum member**: edit `schemas/myfinance-export-documents-API.v1.yml`, run `npm run codegen-export-documents`, wire the new value into `eInvoiceConfig`, then follow the **openapi-schema-codegen** skill for wrappers, `mock/` handlers, and tests (see [Related skills](#related-skills)).
 
@@ -60,28 +60,29 @@ Copy and tick through in order.
 
 - [ ] `src/components/DownloadMenu.vue`:
   - [ ] If business-area-driven or **dual** customer+business-area: update **`E_INVOICE_PREFIXES`** (order matters for `getEInvoiceData()`), review **`getEInvoiceData()`** guards.
-  - [ ] Treat **`isBusinessArea`** as a **boolean** computed (e.g. whether **any** selected invoice’s `businessArea` matches a prefix). Use it consistently in **`showEInvoice`** and **`getDocumentType("eInvoice")`** — not a filtered list’s `.length` (see MYF-4368 / PR **#4554**).
+  - [ ] Treat **`isBusinessArea`** as a **boolean** computed (e.g. whether **any** selected invoice’s `businessArea` matches a prefix). Use it consistently in **`showEInvoice`** and **`getDocumentType("eInvoice")`** — not a filtered list’s `.length` (incorrect length checks break gating and document type selection).
   - [ ] Confirm **`showEInvoice`** matches product: tabs, customer or business-area gate, and payload flags (`hasJson`, `hasXML`, or e-invoice fields).
   - [ ] Confirm **`getDocumentType("eInvoice")`** matches **`eInvoiceConfig`** for both **business-area substring** and **customer-country** branches.
 
 ### 4) Download pipeline (extension, zip prefixes)
 
-- [ ] `src/lib/download.utility.ts`: confirm **`getExtension`** for the new `countryCode` / `eInvoiceFileType`; add unit tests.
-- [ ] `src/lib/utilities.ts`: **`getDefaultPrefix`** only special-cases India (`IN`) for e-invoice bulk zip naming — extend only if product requires it.
-- [ ] `src/lib/typed-utilities.ts`: **`isDownloadableInvoice`** must stay true for target rows (json, xml, or approved e-invoice per existing rule).
+- [ ] **`src/lib/download.utility.ts` (usual change):** confirm **`getExtension`** for the new `countryCode` / `eInvoiceFileType`; add or extend unit tests in **`tests/unit/lib/download.utility.spec.ts`**.
+- [ ] **`src/lib/utilities.ts`:** **`getDefaultPrefix`** only special-cases India (`IN`) for e-invoice bulk zip naming. **Typical country-enable work does not edit this file.** Change it **only** if product explicitly requires a new bulk-zip prefix rule for this country.
+- [ ] **`src/lib/typed-utilities.ts`:** **`isDownloadableInvoice`** for `eInvoice` encodes shared eligibility (`hasJson` / `hasXML` / approved `hasEInvoice`). **Typical country-enable work does not edit this file.** Change it **only** if the new country introduces different eligibility flags or statuses than existing jurisdictions.
 
 ### 5) Invoice payload and local mocks
 
 - [ ] Helpers/stores already map **`hasJson`**, **`hasXML`**, **`hasEInvoice`**, **`eInvoiceStatus`**, **`eInvoiceFileType`**, **`eInvoiceNo`**, **`businessArea`** into `downloadableInvoices` (e.g. open/paid helpers). If not, update mappers.
-- [ ] **Vite mock data**: add or adjust a representative invoice in **`mock/data/open-invoices.json`** (and other tab mocks if you test those tabs) with the right **`businessArea`**, flags, and e-invoice fields so local **`/myfinance/api`** behaviour matches the story (see openapi-schema-codegen for mock server layout).
+- [ ] **Vite mock data — open tab (typical):** add or adjust a representative invoice in **`mock/data/open-invoices.json`** with the right **`businessArea`**, flags, and e-invoice fields so local **`/myfinance/api`** matches the story (see openapi-schema-codegen for mock server layout).
+- [ ] **Vite mock data — other tabs (when acceptance or tests cover them):** mirror the same shape in the relevant **`mock/data/*.json`** files (e.g. **`mock/data/paid-invoices.json`**, **`mock/data/credited-invoices.json`**, overdue/disputed mocks if your flow uses them) so **paid / credited / other tabs** exercise **`DownloadMenu`** the same way as production. A minimal **open-tab-only** story often touches **`open-invoices.json`** alone; add or update the other mock files when the work spans those tabs.
 
-### 6) Tests (match typical PR structure)
+### 6) Tests (recommended layout)
 
 - [ ] **`tests/unit/lib/download.utility.spec.ts`**: assert **`getExtension("eInvoice", "<code>", …)`** for the new country/prefix (and `zip` when applicable).
 - [ ] **`tests/unit/components/DownloadMenu.spec.ts`**: extend existing cases (tooltips, `documentType`, download wiring) as needed.
-- [ ] **`tests/unit/components/DownloadMenu.more.spec.ts`**: use this file (or add it) for **`showEInvoice` matrices** — customer country vs **`businessArea`** vs neither, with **`createTestingPinia()`** and **`useAppStore().customerCountryCode`**. **Set store state after `shallowMount`** when asserting computeds that depend on the app store, so reactive updates match runtime (avoids ordering flakes; see MYF-4368 fix).
+- [ ] **`tests/unit/components/DownloadMenu.more.spec.ts`**: use this file (or add it) for **`showEInvoice` matrices** — customer country vs **`businessArea`** vs neither, with **`createTestingPinia()`** and **`useAppStore().customerCountryCode`**. **Set store state after `shallowMount`** when asserting computeds that depend on the app store so reactive updates match runtime (see **`DownloadMenu.more.spec.ts`** for a stable pattern).
 - [ ] **Cypress** `tests/component/components/DownloadMenu.spec.ts`: only when you need full component/DOM coverage; not required for every country add.
-- [ ] **Collateral Cypress (as needed):** New mock rows or navigation timing can surface flakes in **other** component specs (e.g. `tests/component/components/OpenInvoices.spec.ts` — router baseline, wait for store loading before patching fixtures, stable selectors). Fix in the same PR when CI fails; not part of the minimal e-invoice file set (PR **#4554**).
+- [ ] **Collateral Cypress (as needed):** New mock rows or navigation timing can surface flakes in **other** component specs (e.g. `tests/component/components/OpenInvoices.spec.ts` — router baseline, wait for store loading before patching fixtures, stable selectors). Fix when CI fails; these files are outside the minimal e-invoice touch list but still part of a shippable change.
 
 ### 7) Verify
 
@@ -108,4 +109,4 @@ Copy and tick through in order.
 | `isBusinessArea` | `DownloadMenu.vue` computed **boolean**; true when any row’s `businessArea` matches a prefix |
 | `DocumentTypeEnum` | Generated from export-documents OpenAPI |
 
-Deeper behaviour and **MYF-4368 step order**: [references/flow-and-files.md](references/flow-and-files.md).
+Deeper behaviour and **Belgium (BE) checklist order**: [references/flow-and-files.md](references/flow-and-files.md).

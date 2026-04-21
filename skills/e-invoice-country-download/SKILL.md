@@ -48,7 +48,7 @@ Copy and tick through in order.
 
 - [ ] Confirm with backend which **`DocumentTypeEnum`** value the export-documents API expects (many tickets **reuse** an existing member, e.g. **xml** e-invoices using `DocumentTypeEnum.VIETNAMINVOICE`).
 - [ ] **Reuse only (no contract change)** — typical “enable a country” ticket: **do not** edit `schemas/` or run `codegen-export-documents`. Import the chosen enum from `@/auto/api/export-documents` and set `eInvoiceConfig[…].invoiceType` to that member.
-- [ ] **New enum member**: edit `schemas/myfinance-export-documents-API.v1.yml`, run `npm run codegen-export-documents`, wire the new value into `eInvoiceConfig`, then follow the **openapi-schema-codegen** companion skill for wrappers, `mock/` handlers, and tests (see [Related skills](#related-skills)).
+- [ ] **New enum member**: edit `schemas/myfinance-export-documents-API.v1.yml`, run `npm run codegen-export-documents`, wire the new value into `eInvoiceConfig`, then follow the related **openapi-schema-codegen** skill for wrappers, `mock/` handlers, and tests (see [Related skills](#related-skills)).
 
 ### 2) Config maps (source of truth for type + extension)
 
@@ -94,7 +94,7 @@ Copy and tick through in order.
 
 ## Related skills
 
-Companion skills are referenced **by name** so any agent host can resolve them from your skills bundle, catalog, or documentation layout (no vendor-specific paths).
+Related skills are referenced **by name** so any agent host can resolve them from your skills bundle, catalog, or documentation layout (no vendor-specific paths).
 
 - **openapi-schema-codegen** — When the export-documents contract changes: `schemas/`, `npm run codegen-*`, `src/auto/api/`, mock handlers, and post-codegen verification in **ui-myfinance**.
 - **vitest-unit-component-testing** — Vitest + Pinia patterns for unit and component tests in **ui-myfinance**.

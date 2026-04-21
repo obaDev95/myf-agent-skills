@@ -66,14 +66,15 @@ Copy and tick through in order.
 
 ### 4) Download pipeline (extension, zip prefixes)
 
-- [ ] `src/lib/download.utility.ts`: confirm **`getExtension`** for the new `countryCode` / `eInvoiceFileType`; add unit tests.
-- [ ] `src/lib/utilities.ts`: **`getDefaultPrefix`** only special-cases India (`IN`) for e-invoice bulk zip naming — extend only if product requires it.
-- [ ] `src/lib/typed-utilities.ts`: **`isDownloadableInvoice`** must stay true for target rows (json, xml, or approved e-invoice per existing rule).
+- [ ] **`src/lib/download.utility.ts` (usual change):** confirm **`getExtension`** for the new `countryCode` / `eInvoiceFileType`; add or extend unit tests in **`tests/unit/lib/download.utility.spec.ts`**.
+- [ ] **`src/lib/utilities.ts` (confirm first):** **`getDefaultPrefix`** only special-cases India (`IN`) for e-invoice bulk zip naming. **Do not edit by default** — only extend if product explicitly requires a new bulk-zip prefix rule for this country (PR **#4554** / MYF-4368 did not touch this file).
+- [ ] **`src/lib/typed-utilities.ts` (confirm first):** **`isDownloadableInvoice`** for `eInvoice` still matches how rows arrive from the API (`hasJson` / `hasXML` / approved `hasEInvoice`). **Do not edit by default** — change only if the new country introduces different eligibility flags or statuses than existing jurisdictions (PR **#4554** did not touch this file).
 
 ### 5) Invoice payload and local mocks
 
 - [ ] Helpers/stores already map **`hasJson`**, **`hasXML`**, **`hasEInvoice`**, **`eInvoiceStatus`**, **`eInvoiceFileType`**, **`eInvoiceNo`**, **`businessArea`** into `downloadableInvoices` (e.g. open/paid helpers). If not, update mappers.
-- [ ] **Vite mock data**: add or adjust a representative invoice in **`mock/data/open-invoices.json`** (and other tab mocks if you test those tabs) with the right **`businessArea`**, flags, and e-invoice fields so local **`/myfinance/api`** behaviour matches the story (see openapi-schema-codegen for mock server layout).
+- [ ] **Vite mock data — open tab (typical):** add or adjust a representative invoice in **`mock/data/open-invoices.json`** with the right **`businessArea`**, flags, and e-invoice fields so local **`/myfinance/api`** matches the story (see [Related skills](#related-skills) for codegen and mock layout in ui-myfinance).
+- [ ] **Vite mock data — other tabs (when acceptance or tests cover them):** mirror the same shape in the relevant **`mock/data/*.json`** files (e.g. **`mock/data/paid-invoices.json`**, **`mock/data/credited-invoices.json`**, overdue/disputed mocks if your flow uses them) so **paid / credited / other tabs** exercise **`DownloadMenu`** the same way as production. PR **#4554** only needed **`open-invoices.json`** because scope was the open-invoices path; widen mocks when the ticket spans multiple tabs.
 
 ### 6) Tests (match typical PR structure)
 

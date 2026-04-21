@@ -53,7 +53,7 @@ This reference expands [SKILL.md](../SKILL.md) with concrete file roles, test pa
 
 ### Local dev mocks (`mock/data/`)
 
-- **`mock/data/open-invoices.json`**: add a row with the target **`businessArea`**, **`hasXML`** / **`hasJson`** / **`hasEInvoice`**, **`eInvoiceStatus`**, etc., so the Vite mock server (`/myfinance/api`) exercises the same paths as production data for the **open** tab. When routes or bodies change, align mocks with the **openapi-schema-codegen** skill in ui-myfinance (`.cursor/skills/openapi-schema-codegen/SKILL.md` or `myf-agent-skills/openapi-schema-codegen/SKILL.md` when your checkout includes it).
+- **`mock/data/open-invoices.json`**: add a row with the target **`businessArea`**, **`hasXML`** / **`hasJson`** / **`hasEInvoice`**, **`eInvoiceStatus`**, etc., so the Vite mock server (`/myfinance/api`) exercises the same paths as production data for the **open** tab. When routes or bodies change, align mock expectations with the **openapi-schema-codegen** companion skill (see [SKILL.md](../SKILL.md) → Related skills).
 - **Other tabs:** when acceptance criteria or automated tests cover **paid**, **credited**, overdue, or disputed flows, add matching sample rows to the corresponding files (e.g. **`mock/data/paid-invoices.json`**, **`mock/data/credited-invoices.json`**, and other `mock/data/*` payloads those views load). A minimal **open-tab-only** change often updates **`open-invoices.json`** alone; multi-tab stories should update every mock the UI hits.
 
 ## OpenAPI and codegen (only when adding a new document type)

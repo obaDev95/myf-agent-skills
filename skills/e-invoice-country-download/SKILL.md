@@ -48,7 +48,7 @@ Copy and tick through in order.
 
 - [ ] Confirm with backend which **`DocumentTypeEnum`** value the export-documents API expects (many tickets **reuse** an existing member, e.g. **xml** e-invoices using `DocumentTypeEnum.VIETNAMINVOICE`).
 - [ ] **Reuse only (no contract change)** — typical “enable a country” ticket: **do not** edit `schemas/` or run `codegen-export-documents`. Import the chosen enum from `@/auto/api/export-documents` and set `eInvoiceConfig[…].invoiceType` to that member.
-- [ ] **New enum member**: edit `schemas/myfinance-export-documents-API.v1.yml`, run `npm run codegen-export-documents`, wire the new value into `eInvoiceConfig`, then follow the **openapi-schema-codegen** skill for wrappers, `mock/` handlers, and tests (see [Related skills](#related-skills)).
+- [ ] **New enum member**: edit `schemas/myfinance-export-documents-API.v1.yml`, run `npm run codegen-export-documents`, wire the new value into `eInvoiceConfig`, then follow the related **openapi-schema-codegen** skill for wrappers, `mock/` handlers, and tests (see [Related skills](#related-skills)).
 
 ### 2) Config maps (source of truth for type + extension)
 
@@ -73,7 +73,7 @@ Copy and tick through in order.
 ### 5) Invoice payload and local mocks
 
 - [ ] Helpers/stores already map **`hasJson`**, **`hasXML`**, **`hasEInvoice`**, **`eInvoiceStatus`**, **`eInvoiceFileType`**, **`eInvoiceNo`**, **`businessArea`** into `downloadableInvoices` (e.g. open/paid helpers). If not, update mappers.
-- [ ] **Vite mock data — open tab (typical):** add or adjust a representative invoice in **`mock/data/open-invoices.json`** with the right **`businessArea`**, flags, and e-invoice fields so local **`/myfinance/api`** matches the story (see openapi-schema-codegen for mock server layout).
+- [ ] **Vite mock data — open tab (typical):** add or adjust a representative invoice in **`mock/data/open-invoices.json`** with the right **`businessArea`**, flags, and e-invoice fields so local **`/myfinance/api`** matches the story (see **openapi-schema-codegen** in [Related skills](#related-skills) for mock layout and verification).
 - [ ] **Vite mock data — other tabs (when acceptance or tests cover them):** mirror the same shape in the relevant **`mock/data/*.json`** files (e.g. **`mock/data/paid-invoices.json`**, **`mock/data/credited-invoices.json`**, overdue/disputed mocks if your flow uses them) so **paid / credited / other tabs** exercise **`DownloadMenu`** the same way as production. A minimal **open-tab-only** story often touches **`open-invoices.json`** alone; add or update the other mock files when the work spans those tabs.
 
 ### 6) Tests (recommended layout)
@@ -94,8 +94,10 @@ Copy and tick through in order.
 
 ## Related skills
 
-- **openapi-schema-codegen** — In the ui-myfinance repo, use `.cursor/skills/openapi-schema-codegen/SKILL.md`, or the mirrored copy under `myf-agent-skills/openapi-schema-codegen/SKILL.md` when your checkout includes it. Covers `schemas/`, `npm run codegen-*`, `src/auto/api/`, mocks, and verification when the export-documents contract changes.
-- **vitest-unit-component-testing** — In a full ui-myfinance checkout with agent skills, see `myf-agent-skills/vitest-unit-component-testing/SKILL.md` for Vitest + Pinia patterns.
+Related skills are referenced **by name** so any agent host can resolve them from your skills bundle, catalog, or documentation layout (no vendor-specific paths).
+
+- **openapi-schema-codegen** — When the export-documents contract changes: `schemas/`, `npm run codegen-*`, `src/auto/api/`, mock handlers, and post-codegen verification in **ui-myfinance**.
+- **vitest-unit-component-testing** — Vitest + Pinia patterns for unit and component tests in **ui-myfinance**.
 
 ---
 

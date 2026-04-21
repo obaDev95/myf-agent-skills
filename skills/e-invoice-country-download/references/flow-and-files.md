@@ -40,10 +40,12 @@ This reference expands [SKILL.md](../SKILL.md) with concrete file roles, test pa
 ### `src/lib/utilities.ts`
 
 - **`getDefaultPrefix`**: Only **`IN`** uses the India-specific chunk prefix for e-invoice bulk zips unless extended.
+- **Rollout default:** **read and confirm**; **do not change** unless product requires a new bulk-zip prefix rule. MYF-4368 (PR **#4554**) did not modify this file.
 
 ### `src/lib/typed-utilities.ts`
 
 - **`isDownloadableInvoice`**: For `eInvoice`, requires `hasJson || hasXML || (hasEInvoice && eInvoiceStatus === "APPROVED")`.
+- **Rollout default:** **read and confirm** rows for the new country still satisfy this; **do not change** unless eligibility rules differ. MYF-4368 (PR **#4554**) did not modify this file.
 
 ### Invoice mappers and stores
 
@@ -51,7 +53,8 @@ This reference expands [SKILL.md](../SKILL.md) with concrete file roles, test pa
 
 ### Local dev mocks (`mock/data/`)
 
-- **`mock/data/open-invoices.json`** (and similar): add a row with the target **`businessArea`**, **`hasXML`** / **`hasJson`** / **`hasEInvoice`**, **`eInvoiceStatus`**, etc., so the Vite mock server (`/myfinance/api`) exercises the same paths as production data. When routes or bodies change, align mocks with the **openapi-schema-codegen** skill in ui-myfinance (`.cursor/skills/openapi-schema-codegen/SKILL.md` or `myf-agent-skills/openapi-schema-codegen/SKILL.md`).
+- **`mock/data/open-invoices.json`**: add a row with the target **`businessArea`**, **`hasXML`** / **`hasJson`** / **`hasEInvoice`**, **`eInvoiceStatus`**, etc., so the Vite mock server (`/myfinance/api`) exercises the same paths as production data for the **open** tab. When routes or bodies change, align mocks with the **openapi-schema-codegen** skill in ui-myfinance (`.cursor/skills/openapi-schema-codegen/SKILL.md` or `myf-agent-skills/openapi-schema-codegen/SKILL.md` when your checkout includes it).
+- **Other tabs:** when acceptance criteria or automated tests cover **paid**, **credited**, overdue, or disputed flows, add matching sample rows to the corresponding files (e.g. **`mock/data/paid-invoices.json`**, **`mock/data/credited-invoices.json`**, and other `mock/data/*` payloads those views load). PR **#4554** only updated **`open-invoices.json`** because scope was open invoices; multi-tab stories should update every mock the UI hits.
 
 ## OpenAPI and codegen (only when adding a new document type)
 

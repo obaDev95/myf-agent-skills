@@ -1,6 +1,6 @@
 # E-invoice flow: files and behaviour
 
-This reference expands [SKILL.md](../SKILL.md) with concrete file roles, test patterns, and PR parity.
+This reference expands [SKILL.md](../SKILL.md) with concrete file roles, test patterns, and a reference checklist.
 
 ## End-to-end flow
 
@@ -40,12 +40,12 @@ This reference expands [SKILL.md](../SKILL.md) with concrete file roles, test pa
 ### `src/lib/utilities.ts`
 
 - **`getDefaultPrefix`**: Only **`IN`** uses the India-specific chunk prefix for e-invoice bulk zips unless extended.
-- **Rollout default:** **read and confirm**; **do not change** unless product requires a new bulk-zip prefix rule. MYF-4368 (PR **#4554**) did not modify this file.
+- **Typical country-enable work:** **read and confirm** behaviour only; **do not change** this file unless product requires a new bulk-zip prefix rule. Enabling e-invoice for a new country does not usually require edits here.
 
 ### `src/lib/typed-utilities.ts`
 
 - **`isDownloadableInvoice`**: For `eInvoice`, requires `hasJson || hasXML || (hasEInvoice && eInvoiceStatus === "APPROVED")`.
-- **Rollout default:** **read and confirm** rows for the new country still satisfy this; **do not change** unless eligibility rules differ. MYF-4368 (PR **#4554**) did not modify this file.
+- **Typical country-enable work:** **read and confirm** rows for the new country still satisfy this; **do not change** unless eligibility rules differ. Enabling e-invoice for a new country does not usually require edits here.
 
 ### Invoice mappers and stores
 
@@ -54,13 +54,13 @@ This reference expands [SKILL.md](../SKILL.md) with concrete file roles, test pa
 ### Local dev mocks (`mock/data/`)
 
 - **`mock/data/open-invoices.json`**: add a row with the target **`businessArea`**, **`hasXML`** / **`hasJson`** / **`hasEInvoice`**, **`eInvoiceStatus`**, etc., so the Vite mock server (`/myfinance/api`) exercises the same paths as production data for the **open** tab. When routes or bodies change, align mocks with the **openapi-schema-codegen** skill in ui-myfinance (`.cursor/skills/openapi-schema-codegen/SKILL.md` or `myf-agent-skills/openapi-schema-codegen/SKILL.md` when your checkout includes it).
-- **Other tabs:** when acceptance criteria or automated tests cover **paid**, **credited**, overdue, or disputed flows, add matching sample rows to the corresponding files (e.g. **`mock/data/paid-invoices.json`**, **`mock/data/credited-invoices.json`**, and other `mock/data/*` payloads those views load). PR **#4554** only updated **`open-invoices.json`** because scope was open invoices; multi-tab stories should update every mock the UI hits.
+- **Other tabs:** when acceptance criteria or automated tests cover **paid**, **credited**, overdue, or disputed flows, add matching sample rows to the corresponding files (e.g. **`mock/data/paid-invoices.json`**, **`mock/data/credited-invoices.json`**, and other `mock/data/*` payloads those views load). A minimal **open-tab-only** change often updates **`open-invoices.json`** alone; multi-tab stories should update every mock the UI hits.
 
 ## OpenAPI and codegen (only when adding a new document type)
 
 - **Schema**: `schemas/myfinance-export-documents-API.v1.yml`.
 - **Command**: `npm run codegen-export-documents` → `src/auto/api/export-documents.ts`.
-- Many country rollouts **reuse** an existing `DocumentTypeEnum` value — then **no** schema edit and **no** codegen run.
+- Many country tickets **reuse** an existing `DocumentTypeEnum` value — then **no** schema edit and **no** codegen run.
 
 ## Tests (Vitest and optional Cypress)
 
@@ -68,20 +68,20 @@ This reference expands [SKILL.md](../SKILL.md) with concrete file roles, test pa
 |------|------|
 | `tests/unit/lib/download.utility.spec.ts` | **`getExtension`** cases for new country code / prefix |
 | `tests/unit/components/DownloadMenu.spec.ts` | Existing DownloadMenu behaviour, tooltips, `documentType` |
-| `tests/unit/components/DownloadMenu.more.spec.ts` | Large **`showEInvoice`** matrices (customer vs `businessArea`); use **`createTestingPinia()`**; set **`useAppStore().customerCountryCode`** after **`shallowMount`** when testing computeds that depend on the store so results match MYF-4368-style fixes |
+| `tests/unit/components/DownloadMenu.more.spec.ts` | Large **`showEInvoice`** matrices (customer vs `businessArea`); use **`createTestingPinia()`**; set **`useAppStore().customerCountryCode`** after **`shallowMount`** when testing computeds that depend on the store (same ordering as in that spec file) |
 | `tests/component/components/DownloadMenu.spec.ts` | Optional Cypress component coverage |
 
 ### Collateral Cypress (stability)
 
-Adding or changing mock invoices can affect **other** component tests (routing, async load, tag clicks). **PR #4554** adjusted `tests/component/components/OpenInvoices.spec.ts` (e.g. router baseline, wait until `isLoading` is false before patching store data, inlined selectors) without changing e-invoice product behaviour. Apply similar fixes when CI fails, even if the file is outside the core checklist above.
+Adding or changing mock invoices can affect **other** component tests (routing, async load, tag clicks). For example, **`OpenInvoices.spec.ts`** sometimes needs a stable router baseline, waiting until `isLoading` is false before patching store data, and robust selectors. Apply similar fixes when CI fails, even if the file is outside the core checklist above.
 
 ## Pinia / app store in unit tests
 
-When the SFC reads **`useAppStore().customerCountryCode`** inside computeds like `showEInvoice`, mutate the store **after** the component is mounted with **`createTestingPinia()`** if you see stale or flaky assertions — mirror the working pattern in `DownloadMenu.more.spec.ts` (MYF-4368).
+When the SFC reads **`useAppStore().customerCountryCode`** inside computeds like `showEInvoice`, mutate the store **after** the component is mounted with **`createTestingPinia()`** if you see stale or flaky assertions — mirror the working pattern in **`DownloadMenu.more.spec.ts`**.
 
-## Reference PR parity: MYF-4368 (Belgium)
+## Reference checklist: Belgium (BE)
 
-Following the skill in order should yield the same **kind** of change set as branch `myf-4368` / PR **#4554**:
+Following the skill in order should yield the same **shape** of change for a **dual** customer-country + business-area country (example **Belgium**):
 
 1. **`configItems.interface.ts`**: add **`BE`** to **`EInvoiceConfig`**.
 2. **`configItems.ts`**: append **`BE`** to **`eInvoiceCountries`**; add **`eInvoiceConfig.BE`** with **`invoiceType: DocumentTypeEnum.VIETNAMINVOICE`**, **`fileType: "xml"`** (reuse enum — no codegen).
@@ -89,7 +89,7 @@ Following the skill in order should yield the same **kind** of change set as bra
 4. **`download.utility.spec.ts`**: **`getExtension`** for **`BE`**.
 5. **`DownloadMenu.spec.ts`** / **`DownloadMenu.more.spec.ts`**: **`showEInvoice`** true when `customerCountryCode === "BE"` or `businessArea` starts with **`BE`**, false otherwise; respect Pinia ordering above.
 6. **`mock/data/open-invoices.json`**: sample **BE** invoice with **`hasXML`**, **`hasEInvoice`**, **`eInvoiceStatus`**, **`businessArea`** like **`BE00`**.
-7. **Optional (same PR if CI requires it):** stabilize unrelated Cypress specs that mock data or navigation touched — see **Collateral Cypress** above and **PR #4554** (`OpenInvoices.spec.ts`).
+7. **Optional (when CI requires it):** stabilize unrelated Cypress specs that mock data or navigation touched — see **Collateral Cypress** above (e.g. **`OpenInvoices.spec.ts`**).
 
 ## Verification commands
 

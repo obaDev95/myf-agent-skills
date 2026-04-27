@@ -83,6 +83,8 @@ Prefer these assertion paths, in order:
    ```
    This is the default — it exercises the real event path and survives refactors of the setup block.
 
+   For **Cypress** against migrated HTML tables, prefer the same **stable hooks** the SFC ships: table region `data-test`, `tr[data-cy="<rowId>"]`, and `td[data-header-id="…"]` (see **[../../invoice-html-table-migration/references/selector-mapping.md](../../invoice-html-table-migration/references/selector-mapping.md)**). **Do not** use `` `[slot="<rowId>_<column>"]` `` for tables that are no longer `<mc-table>` — those attributes will not exist.
+
 2. **Assert on the store / composable spies** for side-effects the SFC handler fires. Mock the store with `createTestingPinia({ stubActions: false })` (or the project helper) and spy on the action.
 
 3. **Only `defineExpose` a handler when tests genuinely need to invoke it out-of-band** (Paid exposes `setActionableInvoice` / `clearActionableInvoice` because the parent view needs them, and the tests ride on that same expose). Exposing *only* for tests is a smell — document the reason in the SFC with a comment.

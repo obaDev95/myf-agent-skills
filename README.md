@@ -6,8 +6,8 @@ Agent skills for **ui-myfinance** and related workflows. Each skill lives under 
 
 | Skill | Summary |
 |-------|---------|
-| [`html-table-components`](skills/html-table-components/SKILL.md) | `<mc-table>` → semantic HTML `<table>` with `.mds-table`; shared SCSS and parity rules. |
-| [`invoice-html-table-migration`](skills/invoice-html-table-migration/SKILL.md) | Per-tab migration playbook and selector mapping. |
+| [`html-table-components`](skills/html-table-components/SKILL.md) | `<mc-table>` → semantic HTML `<table>` with `.mds-table`; shared SCSS and parity rules. **Step 7** requires migrating legacy test selectors (e.g. `[slot=…]` on `mc-table`) in the **same PR** as the SFC. |
+| [`invoice-html-table-migration`](skills/invoice-html-table-migration/SKILL.md) | Per-tab migration playbook and selector mapping, including **legacy slot hooks** in component and e2e tests. |
 | [`mc-table-legacy-audit`](skills/mc-table-legacy-audit/SKILL.md) | Pre-migration audit for legacy mc-table usage. |
 | [`mds-component-table-html`](skills/mds-component-table-html/SKILL.md) | `.mds-table` modifier catalogue and a11y reference. |
 | [`migration-pr-review`](skills/migration-pr-review/SKILL.md) | Reviewer checklist for HTML table migrations. |

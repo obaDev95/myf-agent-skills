@@ -13,3 +13,5 @@ Keep history easy to revert, cherry-pick, and bisect.
 4. **Messages:** use [Conventional Commits](https://www.conventionalcommits.org/) with a scope when helpful, e.g. `docs(html-table-components): clarify Step 7 test selectors`.
 
 5. **README or index files:** if a commit only updates the root `README.md` table to reflect another skill’s change, that README commit can land **after** the skill commits it summarizes, still as its **own** commit.
+
+6. **Coding agents:** the [`skills/granular-commits/SKILL.md`](skills/granular-commits/SKILL.md) file encodes the same policy in an executable workflow (group diff → stage one group → Conventional `git commit` → repeat). Use it in agent or IDE skill packs when automating commits against this repository.

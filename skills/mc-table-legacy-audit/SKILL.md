@@ -136,9 +136,11 @@ Grep the test tree before migration so the DOM-hook convention is a conscious de
 
 ```bash
 rg -l 'FooTable|data-header-id.*<columnKey>' tests/unit tests/component tests/e2e
+# slot-based cell hooks (must be rewritten when <mc-table> is removed):
+rg -n '\[slot=|slot="|_delete' tests/unit tests/component tests/e2e
 ```
 
-Record every selector style currently in use (`data-header-id`, `data-cy`, `data-test`, slot-based queries) so the migration either preserves them or schedules the rename in the same PR.
+Record every selector style currently in use (`data-header-id`, `data-cy`, `data-test`, **and** any `` `[slot="…"]` `` / `_*_delete`-style queries) so the migration **replaces** them in the same PR as the SFC — see **[../html-table-components/SKILL.md](../html-table-components/SKILL.md#test-selector-migration-mandatory-in-the-same-pr-as-the-sfc)**. Treat slot-based test hooks as part of the legacy contract to unwind, not as stable API.
 
 ---
 

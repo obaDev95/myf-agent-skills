@@ -186,11 +186,11 @@ Dropping `:HBL` silently breaks BL+HBL display and copy behavior; dropping `copy
 
 ## Tests
 
-Follow **[test-structure](../test-structure/SKILL.md)**:
+Follow **[test-structure](../test-structure/SKILL.md)** and, for any migration that replaces `<mc-table>`, **[html-table-components — Test selector migration](../html-table-components/SKILL.md#test-selector-migration-mandatory-in-the-same-pr-as-the-sfc)** (legacy `[slot=…]` and shadow-era selectors in **tests/component**, **tests/unit**, and **tests/e2e** must be updated in the **same PR** as the SFC, not left to manual cleanup).
 
 - Unit (Vitest): BDD `it` titles, feature-grouped `describe` blocks — Sorting, Selection, Pagination, Mobile expanded parity, Cancelled rows (Paid), API sort (Disputed), Virtualization (Open), Row hover/actions, Copy/analytics. No root-level `it`. Toggle `appStore.isSmallScreen` via Pinia when testing responsive branches.
-- Component (Cypress): target headers and cells with the convention the SFC ships; use `:data-cy="row.id"` to scope per row. For virtualized tables, drive the test to scroll or stub the virtualizer.
-- E2E: step definitions for invoice tabs currently target `data-header-id`. If you switch a table to `data-column-id` / `data-cell-id`, update every step in the same PR.
+- Component (Cypress): target headers and cells with the convention the SFC ships; use `:data-cy="row.id"` to scope per row; **do not** keep `` `[slot="${id}_${column}"]` ``-style queries after the table is native HTML. For virtualized tables, drive the test to scroll or stub the virtualizer.
+- E2E: step definitions for invoice tabs currently target `data-header-id`. If you switch a table to `data-column-id` / `data-cell-id`, update every step in the same PR. **Also** grep step definitions for slot-based patterns when the **underlying component** for that flow migrated off `mc-table`.
 
 When a production bug is fixed:
 

@@ -164,15 +164,35 @@ Additional, always required:
 
 ### Step 7 — Tests
 
-- Unit (Vitest) and component (Cypress) tests live per `*HtmlTable` and follow **[test-structure](../test-structure/SKILL.md)**: BDD `it(...)` titles, feature-grouped `describe` blocks (Sorting, Selection, Pagination, Mobile expanded parity, …), no root-level `it`.
+- Unit (Vitest) and component (Cypress) tests live per `*HtmlTable` and follow **[test-structure](../test-structure/SKILL.md)** (see **[test-structure/references/html-table-feature-groups.md](../test-structure/references/html-table-feature-groups.md)** for canonical `describe` groups): BDD `it(...)` titles, feature-grouped `describe` blocks (Sorting, Selection, Pagination, Mobile expanded parity, …), no root-level `it`.
 - Toggle `appStore.isSmallScreen` via Pinia to cover responsive branches.
 - When the table virtualizes rows (Open), do not assume every `pagedRows` item is in the DOM at once — scroll the container, widen the viewport, or stub the virtualizer.
 - When the table refetches on sort or page change (Disputed), assert the store actions fired, not only the column state.
 - When the table has cancelled/disabled rows (Paid), assert both the `cell--cancelled` class and the absence of interactive handlers.
 
+#### Test selector migration (mandatory in the same PR as the SFC)
+
+Legacy `<mc-table>` cell content was often reached through **named slot** hooks on the web component, for example `` `[slot="${rowId}_delete"]` ``, `` `[slot="${rowId}_<columnId>"]` ``, or shadow-specific chains. **Semantic `<table>` rows have no such slots** — any test, view spec, or e2e step that still uses those selectors will pass review of the `.vue` file and still fail in CI. Treat **updating every consumer** as part of the migration, not a follow-up.
+
+1. **Search the test and e2e tree for patterns tied to the old table** (extend the list if the legacy table used other slot names):
+
+   - `` `[slot=` ``, `slot="`, and regex `` `_delete` `` / `` `_[a-zA-Z0-9]+_` `` in filenames that cover the feature (e.g. `tests/component`, `tests/e2e`, `tests/unit`).
+   - Step definitions and helpers that assumed `mc-table` shadow DOM or slot attributes for **this** table.
+
+2. **Map cell hooks to the new DOM** (see **[../invoice-html-table-migration/references/selector-mapping.md](../invoice-html-table-migration/references/selector-mapping.md)** for column conventions):
+
+   | Legacy (mc-table) | Migrated HTML (typical) |
+   |-------------------|-------------------------|
+   | `` `[slot="${rowId}_delete"]` ``, `find("mc-button")` | Row: `tr[data-cy="${rowId}"]` (or `tbody tr.row-${rowId}` if the SFC used that class). Column: `td[data-header-id="delete"]` or a cell wrapper the SFC already exposes (e.g. `.delete-column`). Prefer **region + row + column** (e.g. `'.<table-class> tr[data-cy="…"] .delete-column mc-button'`) over a global attribute query. |
+   | Slot per column `` `${rowId}_${columnId}` `` | `tr[data-cy="${rowId}"]` + `td[data-header-id="${columnId}"]` (or `data-cell-id` if the table uses convention B). |
+
+3. **Siblings still on `<mc-table>` in the same view** — do not copy HTML-table selectors onto them. If a sibling invoice table is still `mc-table`, slotted content may live in the **light DOM** under class wrappers (e.g. `.delete-column`). Prefer **stable class + region** (e.g. `'.pop-invoice-table .delete-column mc-button'`) scoped by row when possible, instead of **slot name strings** in specs, so the next migration does not repeat the same churn.
+
+4. **Cypress stability** — do not use fixed `cy.wait(<ms>)` to “settle” the DOM before assertions. Prefer: assert a **stable root** (e.g. `data-test` on the table section) is visible, then **chain** `.find(...).should(...)` so retries follow real readiness; for absent nodes, scope negatives under the same root (`.find('.foo').should('not.exist')`) so you do not rely on a long blind timeout.
+
 ### Step 8 — Verify
 
-1. Run unit and component specs for the touched HtmlTable and parent view.
+1. Run unit and component specs for the touched HtmlTable and **parent view**; confirm grep from Step 7 (test selector migration) is clean for the feature’s paths.
 2. Run relevant e2e if selectors or step definitions changed.
 3. Diff the legacy template's mobile/expanded branches against the new presenter output **and** any inline mobile blocks — data shown only in legacy mobile/expanded slots must still surface somewhere in the new template.
 4. Open the page at the two breakpoints and confirm the same rows, amounts, currency, totals, empty/loading/error states, and analytics events fire.

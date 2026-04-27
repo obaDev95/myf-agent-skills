@@ -53,7 +53,7 @@ Which rubric bullets apply to which variant. Bullets marked **N/A** below may be
 | §3 No duplicated chrome blocks | yes | yes (Estatement-specific padding rules are legitimate, not duplicates) | yes |
 | §4 Feature groups | full canonical list | Rendering + Selection on component spec; Pagination + Page size on parent-view spec (split coverage is acceptable for this variant) | applicable subset |
 | §4 Variant-specific groups | per-variant (Cancelled rows / API sort / Virtualization) | Dynamic column order | N/A |
-| §4 Selector rename hygiene | yes | yes | yes |
+| §4 Selector rename hygiene (includes **test** selectors: `data-header-id`, and removal of legacy `[slot=…]`/slot-based cell queries when the SFC migrates) | yes | yes | yes |
 | §5 Inventory row in `ui-myfinance-tables.md` | yes | yes | yes |
 
 When a table introduces a new pattern that this table does not cover, add a row to the matrix in the same PR. Do not silently skip bullets for a new variant.
@@ -119,6 +119,7 @@ Follow **[test-structure](../test-structure/SKILL.md)** and its **[html-table-fe
 - [ ] Cancelled-row tests (Paid) assert both the `cell--cancelled` class and the absence of an interactive handler (no selection change, no download).
 - [ ] API-sort tests (Disputed) assert **all three**: the `invoicesStore.changeSort("disputedTab", …)` write, the `disputesStore.UPDATE_SORT_VALUE({ sort_by, id })` write with the UI-column-to-API-field mapping applied, and the awaited `disputesStore.getSortFilteredDisputedInvoiceList()` refetch. Shipped Vitest specs that only assert `UPDATE_SORT_VALUE` + refetch miss the `changeSort` half of the dual-write and will not catch regressions where `disputedTabSortConfig` falls out of sync with the API fetch.
 - [ ] When the PR renames `data-header-id` → `data-cell-id` on a shipped table, every unit / component / e2e selector is updated in the same PR. Partial renames are a block.
+- [ ] **Selector migration for test code:** the PR greps or equivalent-reviews `tests/` (and any shared e2e helpers) for **legacy `mc-table` test hooks** that no longer exist after the migration. At minimum, `` `[slot=` / `slot="` / `` `*_delete` `` / `` `_[A-Za-z0-9]+_(delete|…)` `` patterns that targeted **this** table; leaving them is a **block** — they will fail in CI with “element not found” even when the SFC is correct. Follow **[../html-table-components/SKILL.md](../html-table-components/SKILL.md)** Step 7 “Test selector migration” and **[../invoice-html-table-migration/references/selector-mapping.md](../invoice-html-table-migration/references/selector-mapping.md)** “Legacy `mc-table` slot hooks in tests”.
 
 ---
 

@@ -14,6 +14,7 @@ Agent skills for **ui-myfinance** and related workflows. Each skill lives under 
 | [`shared-table-scss-refactor`](skills/shared-table-scss-refactor/SKILL.md) | Shared SCSS partials for invoice tables. |
 | [`test-structure`](skills/test-structure/SKILL.md) | BDD-style tests and feature-grouped `describe` blocks. |
 | [`e-invoice-country-download`](skills/e-invoice-country-download/SKILL.md) | Enable e-invoice downloads by country or business area (`configItems`, `DownloadMenu`, mocks, tests). |
+| [`granular-commits`](skills/granular-commits/SKILL.md) | **One logical change per commit** (default: one file when changes are independent), [Conventional Commits](https://www.conventionalcommits.org/), and strict staging. |
 
 ## ui-myfinance layout
 
